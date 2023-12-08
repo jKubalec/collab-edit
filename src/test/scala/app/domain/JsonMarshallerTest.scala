@@ -1,30 +1,26 @@
 package app.domain
 
-import spray.json._
-import concurentDocs.app.domain.EditorUpdateMessageJsonProtocol
-import concurentDocs.app.domain.TextEditorDomain.{DeltaMessage, EditorDelta, EditorMessage, InsertString, Retain, Welcome}
-import concurentDocs.app.domain.UserDomain.User
+import concurentDocs.app.domain.TextEditorDomain
+import concurentDocs.app.json.EditorUpdateMessageJsonProtocol
 import org.scalatest.flatspec.AnyFlatSpec
+import spray.json._
+
+import scala.collection.immutable.HashMap
 
 
 class JsonMarshallerTest extends AnyFlatSpec with EditorUpdateMessageJsonProtocol  {
 
 
   "Json protocol" should "parse Jsons properly" in {
+    import TextEditorDomain._
     val data = "{\"type\":\"delta\",\"delta\":{\"ops\":[{\"retain\":36},{\"insert\":\"f\"}]}}"
-    println(data)
     val result = data.parseJson.convertTo[EditorMessage]
-    println(result)
+
+    assert(result == DeltaMessage(List(Retain(36), InsertString("f"))))
 
     val data2 = "{\"type\":\"delta\",\"delta\":{\"ops\":[{\"retain\":51},{\"insert\":\"bold_text\",\"attributes\":{\"bold\":true}}]}}"
-    println(data2.parseJson.convertTo[EditorMessage])
-  }
+    val result2 = data2.parseJson.convertTo[EditorMessage]
 
-  "Json protocol" should "encode Jsons properly" in {
-    val sampleEditorMessage = DeltaMessage(ops = List(Retain(12), InsertString("a")))
-    val encoded = sampleEditorMessage.toJson
-    println(encoded)
-    println(Welcome(User("Honza")).toJson)
+    assert(result2 == DeltaMessage(List(Retain(51), InsertStringWithAttributes("bold_text", HashMap("bold" -> AttributeBool(true))))))
   }
-
 }

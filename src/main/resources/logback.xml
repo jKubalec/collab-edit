@@ -1,6 +1,6 @@
 <configuration>
 
-    <!-- Define a console appender -->
+    <!-- Define err console appender -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- Define the log output format -->
         <encoder>
@@ -9,8 +9,14 @@
     </appender>
 
     <!-- Set the default logging level and add the STDOUT appender -->
-    <root level="DEBUG">
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
+
+    <!-- Set log level for your project to DEBUG -->
+    <logger name="concurentDocs" level="DEBUG"/>
+
+    <!-- Set log level for Cassandra driver to WARN -->
+    <logger name="com.datastax.oss.driver" level="WARN"/>
 
 </configuration>
