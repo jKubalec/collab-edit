@@ -1,4 +1,4 @@
-package concurentDocs.service.actor
+package concurentDocs.service.http
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed._
@@ -10,7 +10,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import akka.util.Timeout
 import concurentDocs.app.domain.UserDomain.User
-import concurentDocs.app.json.EditorUpdateMessageJsonProtocol
+import concurentDocs.service.actor.CollabRoomProviderActor
 import concurentDocs.service.actor.CollabRoomProviderActor.CollabRoomProviderMessage
 import concurentDocs.service.actor.CollabRoomProviderActor.CollabRoomProviderMessage._
 import concurentDocs.service.internals.WebSocketFlowWrapper
@@ -21,7 +21,7 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
-object WebServer extends EditorUpdateMessageJsonProtocol {
+object WebServer {
 
   def startupRoutes(system: ActorSystem[_], chatProviderActor: ActorRef[CollabRoomProviderMessage])
                    (implicit timeout: Timeout, log: Logger): Route = {

@@ -16,3 +16,8 @@ accessing the service
 `http://localhost:8080/init/user/1`
 
 where `user` will be the user login name and `1` is the number of collaboration sheet.
+
+## TODOs:
++ CollabActor fails after user logs out
++ Retain does not synchronize position (updateContent broken in Quill)
++ Snapshots to Mongo?

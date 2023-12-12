@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior, Terminated}
 import akka.http.scaladsl.model.ws.Message
 import akka.stream.scaladsl.Flow
 import akka.util.Timeout
-import concurentDocs.app.domain.TextEditorDomain.EditorMessage
+import concurentDocs.app.domain.TextEditorDomain.FrontendMessage
 import concurentDocs.app.domain.UserDomain.User
 import concurentDocs.service.actor.CollabRoomActor.CollabRoomEvent
 
@@ -17,8 +17,8 @@ object CollabRoomProviderActor {
   sealed trait CollabRoomProviderMessage
   object CollabRoomProviderMessage {
     case class CollabRoomRequest(chatId: Int, user: User, replyTo: ActorRef[CollabRoomProviderMessage]) extends CollabRoomProviderMessage
-    case class CollabFlowProvided(user: User, flow: Flow[EditorMessage, EditorMessage, _], replyTo: ActorRef[CollabRoomProviderMessage]) extends CollabRoomProviderMessage
-    case class CollabFlowResponse(user: User, flow: Flow[EditorMessage, EditorMessage, _]) extends CollabRoomProviderMessage
+    case class CollabFlowProvided(user: User, flow: Flow[FrontendMessage, FrontendMessage, _], replyTo: ActorRef[CollabRoomProviderMessage]) extends CollabRoomProviderMessage
+    case class CollabFlowResponse(user: User, flow: Flow[FrontendMessage, FrontendMessage, _]) extends CollabRoomProviderMessage
 
     case class CollabRoomFinished(chatId: Int, collabRoomRef: ActorRef[CollabRoomEvent]) extends CollabRoomProviderMessage
   }

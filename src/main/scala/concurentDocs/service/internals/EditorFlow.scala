@@ -8,15 +8,14 @@ import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
 import concurentDocs.app.domain.TextEditorDomain
 import concurentDocs.app.domain.TextEditorDomain._
 import concurentDocs.app.domain.UserDomain.User
-import concurentDocs.app.json.EditorUpdateMessageJsonProtocol
 import concurentDocs.service.actor.CollabRoomActor.CollabRoomEvent
 import concurentDocs.service.actor.CollabRoomActor.CollabRoomEvent.{CollabError, UserLogout}
 import org.slf4j.Logger
 
-object EditorFlow extends EditorUpdateMessageJsonProtocol {
+object EditorFlow {
 
   def getEditorFlow(user: User, flowRequestorActor: ActorRef[CollabRoomEvent], chatRoomActor: ActorRef[CollabRoomEvent])
-                   (implicit log: Logger): Flow[EditorMessage, EditorMessage, _] = {
+                   (implicit log: Logger): Flow[FrontendMessage, FrontendMessage, _] = {
 
     val completionMatcher: PartialFunction[CollabRoomEvent, Unit] = {
       case UserLogout(user) => log.info(s"[EditorFlow - $user] Completing flow with user logout") // Define the message that should complete the stream
@@ -37,24 +36,14 @@ object EditorFlow extends EditorUpdateMessageJsonProtocol {
         import GraphDSL.Implicits._
 
         var selfActor: ActorRef[CollabRoomEvent] = null
-/*
-        val superVisionDecider: Supervision.Decider = {
-          case ex: Exception =>
-            log.error(s"[Editorflor-$user] exception: $ex")
-            Supervision.Stop // or Supervision.Restart, Supervision.Stop
-          case anyOther =>
-            log.error(s"[Editorflor-$user] $anyOther")
-            Supervision.Stop
-        }
-*/
 
         val flowActorAsSource = builder.materializedValue.map(actor => {
           selfActor = actor
           UserFlowCreated(user, flowRequestorActor, actor)
         })//.withAttributes(ActorAttributes.withSupervisionStrategy(Supervision.stoppingDecider)) //superVisionDecider))
 
-        val fromEditor: FlowShape[EditorMessage, CollabRoomEvent] = builder.add(
-          Flow[EditorMessage].collect {
+        val fromEditor: FlowShape[FrontendMessage, CollabRoomEvent] = builder.add(
+          Flow[FrontendMessage].collect {
             case delta: DeltaMessage => EditorEvent(user, delta)
             case TextEditorDomain.Login(loginUser) => CollabRoomEvent.UserLogin(user, selfActor)
             case TextEditorDomain.Logout => CollabRoomEvent.UserLogout(user)
@@ -67,7 +56,7 @@ object EditorFlow extends EditorUpdateMessageJsonProtocol {
           }
         )
 
-        val backToEditor: FlowShape[CollabRoomEvent, EditorMessage] = builder.add(
+        val backToEditor: FlowShape[CollabRoomEvent, FrontendMessage] = builder.add(
           Flow[CollabRoomEvent].collect {
               case outgoingEvent: EditorEvent => outgoingEvent.event
               case UserLogout(_) => TextEditorDomain.Logout
@@ -93,13 +82,13 @@ object EditorFlow extends EditorUpdateMessageJsonProtocol {
           })
 
 
-        val greeterSource: Source[EditorMessage, _] = Source.single(Welcome(user))
+        val greeterSource: Source[FrontendMessage, _] = Source.single(Welcome(user))
 
         val mergeFromWs = builder.add(Merge[CollabRoomEvent](2))
-        val mergeBackToWs = builder.add(Merge[EditorMessage](2))
+        val mergeBackToWs = builder.add(Merge[FrontendMessage](2))
         // hack to enable async between backToWebSocket and Merge
-        val asyncBoundary: FlowShape[EditorMessage, EditorMessage] = builder.add(
-          Flow[EditorMessage].map(x => x)
+        val asyncBoundary: FlowShape[FrontendMessage, FrontendMessage] = builder.add(
+          Flow[FrontendMessage].map(x => x)
         )
 
         fromEditor.map { x =>
@@ -115,7 +104,7 @@ object EditorFlow extends EditorUpdateMessageJsonProtocol {
         asyncBoundary ~> mergeBackToWs.in(0)
         greeterSource ~> mergeBackToWs.in(1)
 
-        FlowShape[EditorMessage, EditorMessage](fromEditor.in, mergeBackToWs.out)
+        FlowShape[FrontendMessage, FrontendMessage](fromEditor.in, mergeBackToWs.out)
 
     })
   }

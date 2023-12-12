@@ -21,7 +21,7 @@ object CollabRoomActor {
   sealed trait CollabRoomEvent
 
   object CollabRoomEvent {
-    import concurentDocs.app.domain.TextEditorDomain.{DeltaMessage, EditorDelta, EditorMessage}
+    import concurentDocs.app.domain.TextEditorDomain.{DeltaMessage, EditorDelta, FrontendMessage}
     case class EditorEvent(user: User, event: DeltaMessage) extends CollabRoomEvent
 
     case class UserLogout(user: User) extends CollabRoomEvent
@@ -32,7 +32,7 @@ object CollabRoomActor {
 
     case class UserFlowCreated(user: User, requestorActor: ActorRef[CollabRoomEvent], chatFlowActor: ActorRef[CollabRoomEvent]) extends CollabRoomEvent
 
-    case class CollabFlow(flow: Flow[EditorMessage, EditorMessage, _]) extends CollabRoomEvent
+    case class CollabFlow(flow: Flow[FrontendMessage, FrontendMessage, _]) extends CollabRoomEvent
 
     case class CollabError(e: Throwable) extends CollabRoomEvent
 
