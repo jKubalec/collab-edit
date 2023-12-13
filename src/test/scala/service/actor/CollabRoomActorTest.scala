@@ -18,12 +18,12 @@ class CollabRoomActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike
     import TextEditorDomain._
 
     "login a new user" in {
-      val editorId = 1
-      val sysUser = User("sys-user")
-      val loginUser = User("login-user")
+      val editorId         = 1
+      val sysUser          = User("sys-user")
+      val loginUser        = User("login-user")
       val mockPersistProbe = testKit.createTestProbe[PersistCommand]()
-      val loginUserProbe = testKit.createTestProbe[CollabRoomEvent]()
-      val collabRoom = testKit.spawn(CollabRoomActor.initialized(editorId, HashMap(), mockPersistProbe.ref, sysUser))
+      val loginUserProbe   = testKit.createTestProbe[CollabRoomEvent]()
+      val collabRoom       = testKit.spawn(CollabRoomActor.initialized(editorId, HashMap(), mockPersistProbe.ref, sysUser))
 
       collabRoom ! UserLogin(loginUser, loginUserProbe.ref)
 
@@ -31,20 +31,20 @@ class CollabRoomActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike
     }
 
     "broadcast messages to all but sender" in {
-      val editorId = 1
-      val sysUser = User("sys-user")
-      val sendingUser = User("sending-user")
-      val receivingingUser = User("receiving-user")
-      val mockPersistProbe = testKit.createTestProbe[PersistCommand]()
-      val sendingUserProbe = testKit.createTestProbe[CollabRoomEvent]()
+      val editorId          = 1
+      val sysUser           = User("sys-user")
+      val sendingUser       = User("sending-user")
+      val receivingingUser  = User("receiving-user")
+      val mockPersistProbe  = testKit.createTestProbe[PersistCommand]()
+      val sendingUserProbe  = testKit.createTestProbe[CollabRoomEvent]()
       val receivingingProbe = testKit.createTestProbe[CollabRoomEvent]()
       val participants = HashMap(
-        sendingUser -> sendingUserProbe.ref,
+        sendingUser      -> sendingUserProbe.ref,
         receivingingUser -> receivingingProbe.ref
       )
       val someEditorAction = DeltaMessage(List(InsertString("a"), Retain(1)))
-      val someEditorEvent = EditorEvent(sendingUser, someEditorAction)
-      val collabRoom = testKit.spawn(CollabRoomActor.initialized(editorId, participants, mockPersistProbe.ref, sysUser))
+      val someEditorEvent  = EditorEvent(sendingUser, someEditorAction)
+      val collabRoom       = testKit.spawn(CollabRoomActor.initialized(editorId, participants, mockPersistProbe.ref, sysUser))
 
       collabRoom ! someEditorEvent
 
@@ -52,4 +52,5 @@ class CollabRoomActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike
       sendingUserProbe.expectNoMessage()
     }
   }
+
 }

@@ -7,6 +7,7 @@ val akkaHttpVersion = "10.5.3"
 val scalaTestVersion = "3.2.15"
 val cassandraPersistenceVersion = "1.1.1"
 val tinkerPopVersion = "3.4.13"
+val circeVersion = "0.14.6"
 
 val libraries = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
@@ -14,7 +15,10 @@ val libraries = Seq(
   "com.typesafe.akka" %% "akka-persistence-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-caching" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
+  "io.circe" %% "circe-core" % circeVersion,
+  "io.circe" %% "circe-generic" % circeVersion,
+  "io.circe" %% "circe-parser" % circeVersion,
+
   "ch.qos.logback" % "logback-classic" % "1.3.11",
 
   "org.java-websocket" % "Java-WebSocket" % "1.3.0", // just for the demo client
