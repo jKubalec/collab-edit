@@ -19,5 +19,6 @@ where `user` will be the user login name and `1` is the number of collaboration 
 
 ## TODOs:
 + CollabActor fails after user logs out
-+ Retain does not synchronize position (updateContent broken in Quill)
++ Replace Quill - retain does not synchronize position (updateContent broken in Quill)
 + Snapshots to Mongo?
++ FE in scala.js?

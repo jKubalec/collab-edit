@@ -2,6 +2,8 @@ package concurentDocs
 
 import concurentDocs.service.http.WebServer
 
-object StartDocs extends App {
+object ParallelEdit extends App {
+
   WebServer.start()
+
 }

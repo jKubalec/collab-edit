@@ -17,19 +17,25 @@ import concurentDocs.service.internals.WebSocketFlowWrapper
 import org.slf4j.Logger
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
 import scala.io.StdIn
-import scala.util.{Failure, Success}
+import scala.util.Failure
+import scala.util.Success
 
 object WebServer {
 
-  def startupRoutes(system: ActorSystem[_], chatProviderActor: ActorRef[CollabRoomProviderMessage])
-                   (implicit timeout: Timeout, log: Logger): Route = {
+  def startupRoutes(system: ActorSystem[_], chatProviderActor: ActorRef[CollabRoomProviderMessage])(implicit
+      timeout: Timeout,
+      log: Logger
+  ): Route = {
     implicit val scheduler: Scheduler = system.scheduler
     pathPrefix("init") {
       get {
         path(Segment / IntNumber / "ws") { (userName, chatId) =>
-          val wsFuture = chatProviderActor.ask(ref => CollabRoomRequest(chatId, User(userName), ref))(timeout, scheduler)
+          val wsFuture =
+            chatProviderActor.ask(ref => CollabRoomRequest(chatId, User(userName), ref))(timeout, scheduler)
           onSuccess(wsFuture) {
             case CollabFlowResponse(user, wsFlow) =>
               println(s"Returning WS for user $userName on chat $chatId. Opening socket")
@@ -41,18 +47,18 @@ object WebServer {
               complete(StatusCodes.InternalServerError)
           }
         } ~
-        path(Segment / IntNumber) { (userName, chatId) =>
-          println(s"Asking for chat $chatId for user $userName.")
-          getFromFile("src/main/resources/html/text_editor.html")
-        } ~
-        pathEndOrSingleSlash {
-          getFromFile("src/main/resources/html/text_editor.html")
-        }
+          path(Segment / IntNumber) { (userName, chatId) =>
+            println(s"Asking for chat $chatId for user $userName.")
+            getFromFile("src/main/resources/html/text_editor.html")
+          } ~
+          pathEndOrSingleSlash {
+            getFromFile("src/main/resources/html/text_editor.html")
+          }
       }
     } ~
       pathPrefix("static") {
         get {
-            getFromDirectory("src/main/resources/js")
+          getFromDirectory("src/main/resources/js")
         }
       } ~
       pathSingleSlash {
@@ -60,8 +66,9 @@ object WebServer {
       }
   }
 
-  def startHttpServer(routes: Route)
-                     (implicit system: ActorSystem[SpawnProtocol.Command], ec: ExecutionContext): Future[Http.ServerBinding] = {
+  def startHttpServer(
+      routes: Route
+  )(implicit system: ActorSystem[SpawnProtocol.Command], ec: ExecutionContext): Future[Http.ServerBinding] = {
     val host = "localhost"
     val port = 8080
 
@@ -73,18 +80,19 @@ object WebServer {
     futureBinding
   }
 
-  def stopServer(futureBinding: Future[Http.ServerBinding])(implicit system: ActorSystem[_], ec: ExecutionContext): Unit = {
+  def stopServer(
+      futureBinding: Future[Http.ServerBinding]
+  )(implicit system: ActorSystem[_], ec: ExecutionContext): Unit =
     futureBinding.flatMap(_.unbind()).onComplete(_ => system.terminate())
-  }
 
   def start(): Unit = {
     implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "StreamWebCollaboration")
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
-    implicit val materializer: Materializer = Materializer(system)
+    implicit val materializer: Materializer                 = Materializer(system)
 
-    implicit val timeout: Timeout = Timeout(6.seconds)
+    implicit val timeout: Timeout     = Timeout(6.seconds)
     implicit val scheduler: Scheduler = system.scheduler
-    implicit val log: Logger = system.log
+    implicit val log: Logger          = system.log
 
     val chatProvider = system.ask[ActorRef[CollabRoomProviderMessage]] { ref =>
       Spawn[CollabRoomProviderMessage](
@@ -97,7 +105,8 @@ object WebServer {
 
     chatProvider.onComplete {
       case Success(provider) => stopServer(startHttpServer(startupRoutes(system, provider)))
-      case Failure(e) => log.error(s"Failed to get Chat Provider actor: $e")
+      case Failure(e)        => log.error(s"Failed to get Chat Provider actor: $e")
     }
   }
+
 }

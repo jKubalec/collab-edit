@@ -10,6 +10,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import concurentDocs.app.json.JsonProtocol
 
 class JsonProtocolTest extends AnyWordSpecLike with Matchers {
+
   import SampleJsonMessages._
   import TextEditorDomain._
   import JsonProtocol._
@@ -37,7 +38,7 @@ class JsonProtocolTest extends AnyWordSpecLike with Matchers {
     }
 
     "encode Login(user)" in {
-      val result = (Login(User(userName)): FrontendMessage).asJson
+      val result        = (Login(User(userName)): FrontendMessage).asJson
       val compactResult = Printer.noSpaces.print(result)
 
       assert(compactResult == loginMessage)
@@ -62,58 +63,59 @@ class JsonProtocolTest extends AnyWordSpecLike with Matchers {
 
       result shouldBe Right(combinedDelta)
     }
-
-    "parse debug test" in {
-      val result = decode[FrontendMessage](mm2Msg)
-
-      result shouldBe Right(mm2)
-    }
   }
 
   "Editor messages json encoder" should {
     "encode insert" in {
-      val result = (deltaInsert: FrontendMessage).asJson
+      val result        = (deltaInsert: FrontendMessage).asJson
       val compactResult = Printer.noSpaces.print(result)
 
       assert(compactResult == deltaInsertMessage)
     }
 
     "encode retain" in {
-      val result = (deltaRetain: FrontendMessage).asJson
+      val result        = (deltaRetain: FrontendMessage).asJson
       val compactResult = Printer.noSpaces.print(result)
 
       assert(compactResult == deltaRetainMessage)
     }
 
     "encode combined delta" in {
-      val result = (combinedDelta: FrontendMessage).asJson
+      val result        = (combinedDelta: FrontendMessage).asJson
       val compactResult = Printer.noSpaces.print(result)
 
       assert(compactResult == combinedDeltaMessage)
     }
   }
+  // TODO: Delete and EditorContent test
+
 }
 
 object SampleJsonMessages {
+
   import TextEditorDomain._
 
   val pingMessage = "{\"type\":\"Ping\"}"
 
-  val userName = "Alice"
+  val userName     = "Alice"
+
   val loginMessage = s"{\"type\":\"Login\",\"user\":{\"name\":\"$userName\"}}"
 
   val deltaInsertMessage = "{\"type\":\"delta\",\"delta\":{\"ops\":[{\"insert\":\"f\"}]}}"
-  val deltaInsert = DeltaMessage(List(InsertString("f")))
+
+  val deltaInsert        = DeltaMessage(List(InsertString("f")))
 
   val deltaRetainMessage = "{\"type\":\"delta\",\"delta\":{\"ops\":[{\"retain\":4}]}}"
-  val deltaRetain = DeltaMessage(List(Retain(4)))
+
+  val deltaRetain        = DeltaMessage(List(Retain(4)))
 
   val combinedDeltaMessage = "{\"type\":\"delta\",\"delta\":{\"ops\":[{\"retain\":9},{\"insert\":\"f\"}]}}"
-  val combinedDelta = DeltaMessage(List(
-    Retain(9),
-    InsertString("f")
-  ))
 
-  val mm2Msg="{\"type\":\"delta\",\"delta\":{\"ops\":[{\"insert\":\"a\"}]}}"
-  val mm2 = DeltaMessage(List(InsertString("a")))
+  val combinedDelta = DeltaMessage(
+    List(
+      Retain(9),
+      InsertString("f")
+    )
+  )
+
 }
